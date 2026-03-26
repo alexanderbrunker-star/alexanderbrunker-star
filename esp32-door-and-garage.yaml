@@ -38,9 +38,9 @@ globals:
   - id: summer_active
     type: bool
     initial_value: "false"
-  - id: garage_moving
-    type: int
-    initial_value: "0" # 0 = stopped, 1 = opening, 2 = closing
+  - id: garage_active
+    type: bool
+    initial_value: "false"
   - id: pir_active
     type: bool
     initial_value: "false"
@@ -66,7 +66,7 @@ script:
           else:
             - if:
                 condition:
-                  lambda: 'return id(garage_moving) == 1;'
+                  lambda: 'return id(garage_active);'
                 then:
                   - light.turn_on:
                       id: status_led
@@ -78,29 +78,17 @@ script:
                 else:
                   - if:
                       condition:
-                        lambda: 'return id(garage_moving) == 2;'
+                        lambda: 'return id(pir_active);'
                       then:
                         - light.turn_on:
                             id: status_led
                             red: 1.0
-                            green: 0.0
-                            blue: 0.0
+                            green: 1.0
+                            blue: 1.0
                             brightness: 1.0
-                            effect: "Pulse"
+                            effect: "None"
                       else:
-                        - if:
-                            condition:
-                              lambda: 'return id(pir_active);'
-                            then:
-                              - light.turn_on:
-                                  id: status_led
-                                  red: 1.0
-                                  green: 1.0
-                                  blue: 1.0
-                                  brightness: 1.0
-                                  effect: "None"
-                            else:
-                              - light.turn_off: status_led
+                        - light.turn_off: status_led
 
   - id: pir_timer
     mode: restart
@@ -128,25 +116,17 @@ script:
           value: "false"
       - script.execute: update_led
 
-  - id: garage_opening
+  - id: garage_trigger_timer
+    mode: restart
     then:
       - globals.set:
-          id: garage_moving
-          value: "1"
+          id: garage_active
+          value: "true"
       - script.execute: update_led
-
-  - id: garage_closing
-    then:
+      - delay: 5s
       - globals.set:
-          id: garage_moving
-          value: "2"
-      - script.execute: update_led
-
-  - id: garage_stopped
-    then:
-      - globals.set:
-          id: garage_moving
-          value: "0"
+          id: garage_active
+          value: "false"
       - script.execute: update_led
 
 # =========================
@@ -169,6 +149,7 @@ switch:
     name: "Garage Trigger"
     restore_mode: ALWAYS_OFF
     on_turn_on:
+      - script.execute: garage_trigger_timer
       - delay: 800ms
       - switch.turn_off: garage_trigger
 
