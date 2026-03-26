@@ -45,9 +45,9 @@ Dieses Projekt verfügt über eine intelligente LED-Prioritätensteuerung **dire
 1. **Priorität 1: Tür Summer (Blaues Blinken)**
    Wird der Tür-Summer betätigt, blinkt die LED für 3 Sekunden blau.
 2. **Priorität 2: Garagentor Trigger (Grünes Blinken)**
-   Wenn der `Garage Trigger` (auch via Home Assistant) betätigt wird, blinkt die LED für 5 Sekunden grün.
+   Wenn der `Garage Trigger` (auch via Home Assistant) betätigt wird, blinkt die LED für 15 Sekunden grün.
 3. **Priorität 3: PIR Bewegung (Weißes Leuchten)**
-   Wird Bewegung erkannt, leuchtet die LED für 10 Sekunden konstant weiß. Jede erneute Bewegung startet den Timer neu.
+   Wird Bewegung erkannt, leuchtet die LED für 1 Sekunde konstant weiß. Jede erneute Bewegung startet den Timer neu.
 
 ### Home Assistant Integration
 
