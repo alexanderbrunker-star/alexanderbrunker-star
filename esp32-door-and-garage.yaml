@@ -1,0 +1,213 @@
+esphome:
+  name: esp32_garage_door
+  friendly_name: ESP32 Garage & Door
+
+esp32:
+  board: esp32dev
+
+# WLAN mit 2 Netzwerken
+wifi:
+  networks:
+    - ssid: "FRITZ!Box 7590 EU"
+      password: "65437182643568245249"
+    - ssid: "Vodafone-C2CC"
+      password: "ncHHR3ChEY2Ndgfx"
+  ap:
+    ssid: "ESP32-Fallback"
+    password: "fallback1234"
+
+captive_portal:
+
+logger:
+
+api:
+
+ota:
+  - platform: esphome
+
+# Bluetooth Proxy
+esp32_ble_tracker:
+
+bluetooth_proxy:
+  active: true
+
+# =========================
+# Globale Variablen für LED-Priorität
+# =========================
+globals:
+  - id: summer_active
+    type: bool
+    initial_value: "false"
+  - id: garage_moving
+    type: int
+    initial_value: "0" # 0 = stopped, 1 = opening, 2 = closing
+  - id: pir_active
+    type: bool
+    initial_value: "false"
+
+# =========================
+# Logik & Timer Skripte
+# =========================
+script:
+  - id: update_led
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return id(summer_active);'
+          then:
+            - light.turn_on:
+                id: status_led
+                red: 0.0
+                green: 0.0
+                blue: 1.0
+                brightness: 1.0
+                effect: "Pulse"
+          else:
+            - if:
+                condition:
+                  lambda: 'return id(garage_moving) == 1;'
+                then:
+                  - light.turn_on:
+                      id: status_led
+                      red: 0.0
+                      green: 1.0
+                      blue: 0.0
+                      brightness: 1.0
+                      effect: "Pulse"
+                else:
+                  - if:
+                      condition:
+                        lambda: 'return id(garage_moving) == 2;'
+                      then:
+                        - light.turn_on:
+                            id: status_led
+                            red: 1.0
+                            green: 0.0
+                            blue: 0.0
+                            brightness: 1.0
+                            effect: "Pulse"
+                      else:
+                        - if:
+                            condition:
+                              lambda: 'return id(pir_active);'
+                            then:
+                              - light.turn_on:
+                                  id: status_led
+                                  red: 1.0
+                                  green: 1.0
+                                  blue: 1.0
+                                  brightness: 1.0
+                                  effect: "None"
+                            else:
+                              - light.turn_off: status_led
+
+  - id: pir_timer
+    mode: restart
+    then:
+      - globals.set:
+          id: pir_active
+          value: "true"
+      - script.execute: update_led
+      - delay: 10s
+      - globals.set:
+          id: pir_active
+          value: "false"
+      - script.execute: update_led
+
+  - id: summer_timer
+    mode: restart
+    then:
+      - globals.set:
+          id: summer_active
+          value: "true"
+      - script.execute: update_led
+      - delay: 3s
+      - globals.set:
+          id: summer_active
+          value: "false"
+      - script.execute: update_led
+
+  - id: garage_opening
+    then:
+      - globals.set:
+          id: garage_moving
+          value: "1"
+      - script.execute: update_led
+
+  - id: garage_closing
+    then:
+      - globals.set:
+          id: garage_moving
+          value: "2"
+      - script.execute: update_led
+
+  - id: garage_stopped
+    then:
+      - globals.set:
+          id: garage_moving
+          value: "0"
+      - script.execute: update_led
+
+# =========================
+# Relais
+# =========================
+switch:
+  - platform: gpio
+    pin: 16
+    id: tuer_summer
+    name: "Tür Summer"
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - script.execute: summer_timer
+      - delay: 500ms
+      - switch.turn_off: tuer_summer
+
+  - platform: gpio
+    pin: 17
+    id: garage_trigger
+    name: "Garage Trigger"
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - delay: 800ms
+      - switch.turn_off: garage_trigger
+
+# =========================
+# PIR Bewegungsmelder (HC-SR501)
+# =========================
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 21
+      mode: INPUT 
+    name: "PIR Bewegung"
+    device_class: motion
+    on_press:
+      - script.execute: pir_timer
+
+# =========================
+# RGB LED (Common Cathode)
+# =========================
+output:
+  - platform: ledc
+    pin: 32
+    id: pwm_r
+  - platform: ledc
+    pin: 33
+    id: pwm_g
+  - platform: ledc
+    pin: 25
+    id: pwm_b
+
+light:
+  - platform: rgb
+    name: "Status LED"
+    id: status_led
+    red: pwm_r
+    green: pwm_g
+    blue: pwm_b
+    effects:
+      - pulse:
+          name: "Pulse"
+          transition_length: 500ms
+          update_interval: 500ms

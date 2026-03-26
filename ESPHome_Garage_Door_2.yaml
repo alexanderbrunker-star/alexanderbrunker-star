@@ -1,0 +1,83 @@
+esphome:
+  name: esp32_garage_door
+  friendly_name: ESP32 Garage & Door
+
+esp32:
+  board: esp32dev
+
+# WLAN mit 2 Netzwerken
+wifi:
+  networks:
+    - ssid: "FRITZ!Box 7590 EU"
+      password: "65437182643568245249"
+    - ssid: "Vodafone-C2CC"
+      password: "ncHHR3ChEY2Ndgfx"
+  ap:
+    ssid: "ESP32-Fallback"
+    password: "fallback1234"
+
+captive_portal:
+
+logger:
+
+api:
+
+ota:
+
+# Bluetooth Proxy
+esp32_ble_tracker:
+
+bluetooth_proxy:
+  active: true
+
+# =========================
+# Relais
+# =========================
+
+switch:
+  - platform: gpio
+    pin: 16
+    id: tuer_summer
+    name: "Tür Summer"
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - delay: 500ms
+      - switch.turn_off: tuer_summer
+
+  - platform: gpio
+    pin: 17
+    id: garage_trigger
+    name: "Garage Trigger"
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - delay: 800ms
+      - switch.turn_off: garage_trigger
+
+# =========================
+# Türkontakte
+# =========================
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 23
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Haustür Kontakt"
+    device_class: door
+
+  - platform: gpio
+    pin:
+      number: 22
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Garagentor Kontakt"
+    device_class: garage_door
+
+  - platform: gpio
+    pin:
+      number: 21
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "PIR Bewegung"
+    device_class: motion
