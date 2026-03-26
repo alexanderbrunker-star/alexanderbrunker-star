@@ -90,13 +90,9 @@ script:
                       else:
                         - light.turn_off: status_led
 
-  - id: pir_timer
+  - id: pir_release_timer
     mode: restart
     then:
-      - globals.set:
-          id: pir_active
-          value: "true"
-      - script.execute: update_led
       - delay: 1s
       - globals.set:
           id: pir_active
@@ -164,7 +160,13 @@ binary_sensor:
     name: "PIR Bewegung"
     device_class: motion
     on_press:
-      - script.execute: pir_timer
+      - globals.set:
+          id: pir_active
+          value: "true"
+      - script.execute: update_led
+      - script.stop: pir_release_timer
+    on_release:
+      - script.execute: pir_release_timer
 
 # =========================
 # RGB LED (Common Cathode)

@@ -47,7 +47,7 @@ Dieses Projekt verfügt über eine intelligente LED-Prioritätensteuerung **dire
 2. **Priorität 2: Garagentor Trigger (Grünes Blinken)**
    Wenn der `Garage Trigger` (auch via Home Assistant) betätigt wird, blinkt die LED für 15 Sekunden grün.
 3. **Priorität 3: PIR Bewegung (Weißes Leuchten)**
-   Wird Bewegung erkannt, leuchtet die LED für 1 Sekunde konstant weiß. Jede erneute Bewegung startet den Timer neu.
+   Wird Bewegung erkannt, leuchtet die LED konstant weiß. Nach dem Ende der Bewegung leuchtet sie für weitere 1 Sekunde nach und schaltet sich dann aus.
 
 ### Home Assistant Integration
 
