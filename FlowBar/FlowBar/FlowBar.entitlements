@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- App Sandbox - disabled for full local script execution access -->
+	<key>com.apple.security.app-sandbox</key>
+	<false/>
+
+	<!-- Hardened Runtime -->
+	<key>com.apple.security.cs.allow-jit</key>
+	<false/>
+	<key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+	<false/>
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<false/>
+
+	<!-- Network client (for n8n webhook support) -->
+	<key>com.apple.security.network.client</key>
+	<true/>
+
+	<!-- Keychain access -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.flowbar.secrets</string>
+	</array>
+</dict>
+</plist>
